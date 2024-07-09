@@ -28975,6 +28975,7 @@ function run() {
                 token: core.getInput("token"),
                 branch: core.getInput("branch"),
                 workflow: core.getInput("workflow"),
+                job: core.getInput("job"),
                 verify: core.getInput("verify") === "true" ? true : false
             };
             const octokit = github.getOctokit(inputs.token);
@@ -28991,7 +28992,7 @@ function run() {
             }
             const response = yield octokit.rest.actions.listWorkflowRuns({ owner, repo, workflow_id: workflowId, per_page: 100 });
             const runs = response.data.workflow_runs
-                .filter(x => (!inputs.branch || x.head_branch === inputs.branch) && x.conclusion === "success")
+                .filter(x => (!inputs.branch || x.head_branch === inputs.branch) && (inputs.job || x.conclusion === "success"))
                 .sort((r1, r2) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
             let triggeringSha = process.env.GITHUB_SHA;
             let sha = undefined;
@@ -29009,6 +29010,21 @@ function run() {
                         core.warning(`Failed to verify commit ${run.head_sha}. Skipping.`);
                         continue;
                     }
+                    if (inputs.job) {
+                        const jobs = yield octokit.rest.actions.listJobsForWorkflowRun({ owner, repo, run_id: run.id });
+                        let foundJob = false;
+                        for (const job of jobs.data.jobs) {
+                            if (job.name === inputs.job) {
+                                if (job.conclusion === "success") {
+                                    foundJob = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!foundJob) {
+                            continue;
+                        }
+                    }
                     core.info(inputs.verify
                         ? `Commit ${run.head_sha} from run ${run.html_url} verified as last successful CI run.`
                         : `Using ${run.head_sha} from run ${run.html_url} as last successful CI run.`);
@@ -29022,7 +29038,7 @@ function run() {
             }
             if (!sha) {
                 core.warning("Unable to determine SHA of last successful commit. Using SHA and run id for current commit.");
-                sha = triggeringSha;
+                sha = 'undefined';
                 runId = parseInt(process.env.GITHUB_RUN_ID);
             }
             core.setOutput('sha', sha);
