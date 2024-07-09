@@ -26,7 +26,7 @@ If your workflow runs are expected to contain no-longer existing commit SHAs (e.
         with:
           fetch-depth: 0 # check out the entire repo history for SHA verification
       - name: Find matching workflow
-        uses: SamhammerAG/last-successful-build-action@v4
+        uses: VeoVirt/last-successful-build-action@v7
         with:
           branch: "development"
           workflow: "build"
