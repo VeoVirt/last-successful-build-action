@@ -29043,6 +29043,7 @@ function run() {
             }
             core.setOutput('sha', sha);
             core.setOutput('run-id', runId);
+            core.setOutput('n-runs', runs.length);
         }
         catch (error) {
             core.setFailed(error === null || error === void 0 ? void 0 : error.message);
