@@ -116,6 +116,7 @@ async function run(): Promise<void> {
 
         core.setOutput('sha', sha);
         core.setOutput('run-id', runId);
+        core.setOutput('n-runs', runs.length);
     } catch (error: any) {
         core.setFailed(error?.message);
     }
