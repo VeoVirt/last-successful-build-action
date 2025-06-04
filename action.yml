@@ -27,6 +27,8 @@ outputs:
     description: 'Sha of the workflow-run matching the requirements.'
   run-id:
     description: 'Id of the workflow-run matching the requirements.'
+  n-runs:
+    description: 'Number of successful runs of the specified workflow for the branch'
 runs:
   using: 'node20'
   main: 'dist/index.js'
