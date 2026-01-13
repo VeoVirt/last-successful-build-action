@@ -29045,7 +29045,7 @@ function run() {
             }
             core.setOutput('sha', sha);
             core.setOutput('run-id', runId);
-            core.setOutput('n-runs', total_runs.length);
+            core.setOutput('n-runs', total_runs.length - 1);
         }
         catch (error) {
             core.setFailed(error === null || error === void 0 ? void 0 : error.message);
