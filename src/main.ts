@@ -54,6 +54,8 @@ async function run(): Promise<void> {
         }
 
         const response = await octokit.rest.actions.listWorkflowRuns({ owner, repo, workflow_id: workflowId, per_page: 100 });
+        const total_runs = response.data.workflow_runs
+            .filter(x => (!inputs.branch || x.head_branch === inputs.branch))
         const runs = response.data.workflow_runs
             .filter(x => (!inputs.branch || x.head_branch === inputs.branch) && (inputs.job || x.conclusion === "success"))
             .sort((r1, r2) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
@@ -61,7 +63,7 @@ async function run(): Promise<void> {
         let triggeringSha = process.env.GITHUB_SHA as string;
         let sha: string | undefined = undefined;
         let runId: number | undefined = undefined;
-        
+
         if (runs.length > 0) {
             for (const run of runs) {
                 core.debug(`This SHA: ${triggeringSha}`);
@@ -116,7 +118,7 @@ async function run(): Promise<void> {
 
         core.setOutput('sha', sha);
         core.setOutput('run-id', runId);
-        core.setOutput('n-runs', runs.length);
+        core.setOutput('n-runs', total_runs.length);
     } catch (error: any) {
         core.setFailed(error?.message);
     }

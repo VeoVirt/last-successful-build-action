@@ -28991,6 +28991,8 @@ function run() {
                 core.info(`Discovered workflowId for search: ${workflowId}`);
             }
             const response = yield octokit.rest.actions.listWorkflowRuns({ owner, repo, workflow_id: workflowId, per_page: 100 });
+            const total_runs = response.data.workflow_runs
+                .filter(x => (!inputs.branch || x.head_branch === inputs.branch));
             const runs = response.data.workflow_runs
                 .filter(x => (!inputs.branch || x.head_branch === inputs.branch) && (inputs.job || x.conclusion === "success"))
                 .sort((r1, r2) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
@@ -29043,7 +29045,7 @@ function run() {
             }
             core.setOutput('sha', sha);
             core.setOutput('run-id', runId);
-            core.setOutput('n-runs', runs.length);
+            core.setOutput('n-runs', total_runs.length);
         }
         catch (error) {
             core.setFailed(error === null || error === void 0 ? void 0 : error.message);
